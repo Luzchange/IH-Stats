@@ -1,5 +1,6 @@
 # IH-Stats
 Bayesian Thinking in Exposure Assessment
+
 # Monte Carlo Simulation for Well-Mixed Room Model
 
 This code performs a Monte Carlo simulation to estimate the concentration of a chemical in a well-mixed room, considering the uncertainty in the emission rate. 
@@ -31,11 +32,53 @@ The code implements the following:
 ## Requirements
 
 - Python 3
-- Libraries: `pymc`, `pandas`, `scipy`, `numpy`, `matplotlib`, `ipywidgets`
+- Libraries: `pymc3`, `pandas`, `scipy`, `numpy`, `matplotlib`, `ipywidgets`
 
-To install the required libraries, run:
+To install the required libraries, run in `Bash` (Linux users) or `Git Bash` (Windows users):
 
-bash pip install pymc pandas scipy numpy matplotlib ipywidgets
+```
+pip install pymc3 pandas scipy numpy matplotlib ipywidgets
+```
+
+## Execution on Command Line
+
+### Python Virtual Environments
+If you are using a Python Virtual Environment. You will need to update the shebang statement to point to the path of your virtual environment installation. It will look as follows:
+
+```
+#!/home/XXXXX/.venv/imagesearch/bin/python3
+```
+
+Where the `XXXXX` will likely be your username. You can navigate (eg `cd ~/.venv/imagesearch/bin/`) to where your venv is installed and use `pwd` to get the full path
+
+If you would like to install a Python Virtual environment:
+```commandline
+python3 -m venv ~/.venv/imagesearch
+```
+
+
+Load the venv:
+```commandline
+source ~/.venv/imagesearch/bin/activate`
+```
+
+### Execution
+
+Ensure the scripts are executable:
+```commandline
+chmod +x mcs_wmr*.py
+```
+
+To execute the Python scripts:
+```commandline
+./mcs_wmr_slider.py
+```
+
+OR
+
+```commandline
+./mcs_wmr_slider.py
+```
 
 ## Example
 
