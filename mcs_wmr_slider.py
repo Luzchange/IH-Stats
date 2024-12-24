@@ -4,15 +4,16 @@ import pymc as pm
 import pandas as pd
 from scipy import stats
 import numpy as np
-import matplotlib.pyplot as plt
-import ipywidgets as widgets
-from IPython.display import display, clear_output
+from bokeh.io import curdoc
+from bokeh.layouts import column
+from bokeh.models import Slider, ColumnDataSource, DataTable, TableColumn
 
 # --- Input Parameters ---
 # Well-Mixed Room Model
 G = float(input("Enter Emission Rate (G) (mg/min): "))
 Q = float(input("Enter Ventilation Rate (Q) (m3/min): "))
 V = float(input("Enter Room Volume (V) (m3): "))
+
 
 # --- Calculations ---
 # Well-Mixed Room Model
@@ -43,18 +44,20 @@ def update_output(iterations):
     print(f"Standard Deviation: {np.std(results):.2f} mg/m3")
     print(f"95th Percentile: {np.percentile(results, 95):.2f} mg/m3")
 
+
+def resetSlider(event):
+    mcs_slider.reset()
+
+# Create 3 axes for 3 sliders red,green and blue
+ax_slider = plt.axes([0.25, 0.2, 0.65, 0.03])
+
 # Create slider widget
 iterations_slider = widgets.IntSlider(
-    value=1000,
-    min=100,
-    max=10000,
-    step=100,
-    description='Iterations:',
-    continuous_update=False,
+    value=1000, #valinit
+    min=100, #valmin
+    max=10000, #valmax
+    step=100, #valstep
+    description='Iterations:', #label
+    continuous_update=False, #use on_changed event
 )
 
-# Link slider to update_output function
-widgets.interactive(update_output, iterations=iterations_slider)
-
-# Display the interactive plot
-display(iterations_slider)
