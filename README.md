@@ -80,6 +80,11 @@ OR
 ./mcs_wmr_slider.py
 ```
 
+However, to execute the `mcs_wmr_data_slider` use (still work in progress!!!):
+```sh
+bokeh serve --show mcs_wmr_data_slider.py
+```
+
 ## Example
 
 After providing the inputs, an interactive slider will appear. Adjust the slider to change the number of iterations, and the calculated statistics will update accordingly.

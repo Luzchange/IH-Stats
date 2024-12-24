@@ -5,6 +5,7 @@ from scipy import stats
 import numpy as np
 import pymc as pm  # Import PyMC3 for Bayesian analysis
 import matplotlib.pyplot as plt  # Import Matplotlib for plotting
+from bokeh.io import show
 from bokeh.io import curdoc
 from bokeh.layouts import column
 from bokeh.models import Slider, ColumnDataSource, DataTable, TableColumn
@@ -73,6 +74,8 @@ def monte_carlo_simulation(func, params, distributions, iterations=10000):
       results: An array of simulation results
     """
     results = []
+    results_dict = {}
+    iteration = 1
     for _ in range(iterations):
         # Generate random values for each parameter based on the specified distribution
         param_values = {
@@ -81,12 +84,16 @@ def monte_carlo_simulation(func, params, distributions, iterations=10000):
         # Evaluate the function (e.g., well_mixed_room) with the random parameters
         result = func(**{**params, **param_values})
         results.append(result)
-    return np.array(results)
+        results_dict['iteration'] = iteration
+        results_dict['concentration']  = result
+        iteration += 1
+
+    return np.array(results), results_dict
 
 # Example usage (modify distributions as needed)
 params = {'Q': Q, 'V': V}  # Use input values for Q and V
 distributions = {'G': stats.norm(loc=G, scale=2)}  # Example: G follows a normal distribution
-results = monte_carlo_simulation(well_mixed_room, params, distributions, iterations)
+results, results_dict = monte_carlo_simulation(well_mixed_room, params, distributions, iterations)
 
 # --- Analyze and Output Monte Carlo Results ---
 
@@ -123,35 +130,38 @@ def update_g(attr, old, new):
     G = new
     params = {'Q': Q, 'V': V}  # Use input values for Q and V
     distributions = {'G': stats.norm(loc=G, scale=2)}  # Example: G follows a normal distribution
-    results = monte_carlo_simulation(well_mixed_room, params, distributions, iterations)
-    update_table(results)
+    results, results_dict = monte_carlo_simulation(well_mixed_room, params, distributions, iterations)
+    update_table(results_dict)
 
 def update_q(attr, old, new):
     Q = new
     params = {'Q': Q, 'V': V}  # Use input values for Q and V
     distributions = {'G': stats.norm(loc=G, scale=2)}  # Example: G follows a normal distribution
-    results = monte_carlo_simulation(well_mixed_room, params, distributions, iterations)
-    update_table(results)
+    results, results_dict = monte_carlo_simulation(well_mixed_room, params, distributions, iterations)
+    update_table(results_dict)
 
 def update_v(attr, old, new):
     V = new
     params = {'Q': Q, 'V': V}  # Use input values for Q and V
     distributions = {'G': stats.norm(loc=G, scale=2)}  # Example: G follows a normal distribution
-    results = monte_carlo_simulation(well_mixed_room, params, distributions, iterations)
-    update_table(results)
+    results, results_dict = monte_carlo_simulation(well_mixed_room, params, distributions, iterations)
+    update_table(results_dict)
 
 def update_i(attr, old, new):
     I = new
-    results = well_mixed_room(G, Q, V)
-    update_table(results)
+    results, results_dict = well_mixed_room(G, Q, V)
+    update_table(results_dict)
 
 
-def update_table(new_data):
-    data_table = DataTable(source=results, columns=columns, width=400, height=280)
+def update_table(new_results):
+    data_table = DataTable(source=new_results, columns=columns, width=400, height=280)
 
 # Define Data Table
-columns = [TableColumn(field=Itr, title=Itr) for Itr in ['Iteration', 'Concentration']]
-data_table = DataTable(source=results, columns=columns, width=400, height=280)
+# columns = [TableColumn(field="iteration", title="Iteration"),
+#            TableColumn(field="concentration", title="Concentration")]
+
+Columns = [TableColumn(field=Ci, title=Ci) for Ci in df.columns] # bokeh columns
+data_table = DataTable(columns=Columns, source=ColumnDataSource(df), width=400, height=280) # bokeh table
 
 # Change events
 g_slider.on_change('value', update_g)
@@ -162,11 +172,12 @@ i_slider.on_change('value', update_i)
 #Setting up what to display
 curdoc().add_root(column(g_slider, q_slider, v_slider, i_slider, data_table))
 
+
 # --- Further analysis of the posterior distributions ---
 
 
 # Calculate credible intervals
-G_ci = pm.stats.hdi(trace['G'])
-Q_ci = pm.stats.hdi(trace['Q'])
-print(f"95% Credible Interval for G: {G_ci}")
-print(f"95% Credible Interval for Q: {Q_ci}")
+# G_ci = pm.stats.hdi(trace['G'])
+# Q_ci = pm.stats.hdi(trace['Q'])
+# print(f"95% Credible Interval for G: {G_ci}")
+# print(f"95% Credible Interval for Q: {Q_ci}")
