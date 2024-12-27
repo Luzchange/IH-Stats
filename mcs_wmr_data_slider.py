@@ -4,7 +4,7 @@ import pandas as pd
 from scipy import stats
 import numpy as np
 from bokeh.io import curdoc
-from bokeh.layouts import column
+from bokeh.layouts import column, row
 from bokeh.models import Slider, ColumnDataSource, DataTable, TableColumn
 
 ## Initial Values
@@ -14,10 +14,10 @@ V = float(1)
 iterations = 1
 
 ## Sliders
-g_slider = Slider(title='Emission Rate (G) (mg/min)',value=G,start=1,end=1000)
-q_slider = Slider(title='Ventilation Rate (Q) (m3/min)',value=Q,start=1,end=1000)
-v_slider = Slider(title='Emission Room Volume (V) (m3)',value=V,start=1,end=1000)
-i_slider = Slider(title='Iterations for Monte Carlo',value=iterations,start=1,end=1000)
+g_slider = Slider(title='Emission Rate (G) (mg/min)', value=G, start=1, end=1000, step=1)
+q_slider = Slider(title='Ventilation Rate (Q) (m3/min)', value=Q, start=1, end=1000, step=1)
+v_slider = Slider(title='Emission Room Volume (V) (m3)', value=V, start=1, end=1000, step=1)
+i_slider = Slider(title='Iterations for Monte Carlo', value=iterations, start=1, end=1000, step=1)
 
 data = dict(concentrations = list(range(0, 1)))
 source = ColumnDataSource(data)
@@ -54,8 +54,6 @@ def monte_carlo_simulation(func, params, distributions, iterations=10000):
       results: An array of simulation results
     """
     results = []
-    results_dict = {}
-    iteration = 1
     for _ in range(iterations):
         # Generate random values for each parameter based on the specified distribution
         param_values = {
@@ -64,11 +62,8 @@ def monte_carlo_simulation(func, params, distributions, iterations=10000):
         # Evaluate the function (e.g., well_mixed_room) with the random parameters
         result = func(**{**params, **param_values})
         results.append(result)
-        results_dict['iteration'] = iteration
-        results_dict['concentration']  = result
-        iteration += 1
 
-    return np.array(results), results_dict
+    return np.array(results)
 
 def update_data(attrname, old, new):
 
@@ -81,7 +76,7 @@ def update_data(attrname, old, new):
     # Generate the new curve
     params = {'Q': Q, 'V': V}  # Use input values for Q and V
     distributions = {'G': stats.norm(loc=G, scale=2)}  # Example: G follows a normal distribution
-    results, results_dict = monte_carlo_simulation(well_mixed_room, params, distributions, iterations)
+    results  = monte_carlo_simulation(well_mixed_room, params, distributions, iterations)
 
     data = dict(concentrations = results)
 
@@ -90,12 +85,10 @@ def update_data(attrname, old, new):
 for w in [g_slider, q_slider, v_slider, i_slider]:
     w.on_change('value', update_data)
 
-params = {'Q': Q, 'V': V}  # Use input values for Q and V
-distributions = {'G': stats.norm(loc=G, scale=2)}  # Example: G follows a normal distribution
-results, results_dict = monte_carlo_simulation(well_mixed_room, params, distributions, 1)
-
-columns = [TableColumn(field="concentrations", title="concentrations")]
+columns = [TableColumn(field="concentrations", title="Concentrations")]
 data_table = DataTable(columns=columns, source=source, width=400, height=280) # bokeh table
 
 #Setting up what to display
-curdoc().add_root(column(g_slider, q_slider, v_slider, i_slider, data_table))
+inputs = column(g_slider, q_slider, v_slider, i_slider)
+curdoc().add_root(column(inputs, data_table))
+curdoc().title = "Monte Carlo Simulation for Well-Mixed Room Model"
